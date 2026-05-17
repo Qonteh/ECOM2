@@ -82,10 +82,34 @@ export function Footer() {
             <ul className="space-y-2">
               <li>
                 <Link
-                  href="/about"
+                  href="/benefits"
                   className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
-                  About Us
+                  How It Works
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/benefits/buyer"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  For Buyers
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/benefits/seller"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  For Sellers
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/benefits/developer"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  For Developers
                 </Link>
               </li>
               <li>
@@ -102,30 +126,6 @@ export function Footer() {
                   className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
                   Safety Tips
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/terms"
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
-                  Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/privacy"
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/contact"
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
-                  Contact Us
                 </Link>
               </li>
             </ul>

@@ -166,6 +166,153 @@ export const useWishlistStore = create<WishlistStore>()(
   )
 );
 
+// Chat store
+export interface Message {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  content: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface Conversation {
+  id: string;
+  productId: string;
+  productTitle: string;
+  productImage: string;
+  productPrice: number;
+  buyerId: string;
+  buyerName: string;
+  buyerAvatar?: string;
+  sellerId: string;
+  sellerName: string;
+  sellerAvatar?: string;
+  sellerVerified: boolean;
+  lastMessage?: string;
+  lastMessageAt?: string;
+  unreadCount: number;
+  messages: Message[];
+  createdAt: string;
+}
+
+interface ChatStore {
+  conversations: Conversation[];
+  activeConversationId: string | null;
+  isOpen: boolean;
+  addConversation: (conversation: Omit<Conversation, 'id' | 'messages' | 'unreadCount' | 'createdAt'>) => string;
+  addMessage: (conversationId: string, message: Omit<Message, 'id' | 'conversationId' | 'isRead' | 'createdAt'>) => void;
+  setActiveConversation: (conversationId: string | null) => void;
+  markAsRead: (conversationId: string) => void;
+  openChat: (productId?: string, sellerId?: string) => void;
+  closeChat: () => void;
+  toggleChat: () => void;
+  getConversation: (productId: string, sellerId: string) => Conversation | undefined;
+  getTotalUnread: () => number;
+}
+
+export const useChatStore = create<ChatStore>()(
+  persist(
+    (set, get) => ({
+      conversations: [],
+      activeConversationId: null,
+      isOpen: false,
+      
+      addConversation: (conversation) => {
+        const id = crypto.randomUUID();
+        set((state) => ({
+          conversations: [
+            {
+              ...conversation,
+              id,
+              messages: [],
+              unreadCount: 0,
+              createdAt: new Date().toISOString(),
+            },
+            ...state.conversations,
+          ],
+        }));
+        return id;
+      },
+      
+      addMessage: (conversationId, message) => {
+        const newMessage: Message = {
+          ...message,
+          id: crypto.randomUUID(),
+          conversationId,
+          isRead: message.senderId === get().conversations.find(c => c.id === conversationId)?.buyerId,
+          createdAt: new Date().toISOString(),
+        };
+        
+        set((state) => ({
+          conversations: state.conversations.map((conv) =>
+            conv.id === conversationId
+              ? {
+                  ...conv,
+                  messages: [...conv.messages, newMessage],
+                  lastMessage: message.content,
+                  lastMessageAt: newMessage.createdAt,
+                  unreadCount: message.senderId !== conv.buyerId ? conv.unreadCount + 1 : conv.unreadCount,
+                }
+              : conv
+          ),
+        }));
+      },
+      
+      setActiveConversation: (conversationId) => {
+        set({ activeConversationId: conversationId });
+        if (conversationId) {
+          get().markAsRead(conversationId);
+        }
+      },
+      
+      markAsRead: (conversationId) => {
+        set((state) => ({
+          conversations: state.conversations.map((conv) =>
+            conv.id === conversationId
+              ? {
+                  ...conv,
+                  unreadCount: 0,
+                  messages: conv.messages.map((msg) => ({ ...msg, isRead: true })),
+                }
+              : conv
+          ),
+        }));
+      },
+      
+      openChat: (productId, sellerId) => {
+        const state = get();
+        if (productId && sellerId) {
+          const existing = state.conversations.find(
+            (c) => c.productId === productId && c.sellerId === sellerId
+          );
+          if (existing) {
+            set({ activeConversationId: existing.id, isOpen: true });
+          }
+        }
+        set({ isOpen: true });
+      },
+      
+      closeChat: () => set({ isOpen: false }),
+      
+      toggleChat: () => set((state) => ({ isOpen: !state.isOpen })),
+      
+      getConversation: (productId, sellerId) => {
+        return get().conversations.find(
+          (c) => c.productId === productId && c.sellerId === sellerId
+        );
+      },
+      
+      getTotalUnread: () => {
+        return get().conversations.reduce((total, conv) => total + conv.unreadCount, 0);
+      },
+    }),
+    {
+      name: 'soko-chat-storage',
+    }
+  )
+);
+
 // Platform stats for developer dashboard
 export interface PlatformStats {
   totalUsers: number;

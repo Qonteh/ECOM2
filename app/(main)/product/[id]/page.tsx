@@ -19,6 +19,7 @@ import {
   Shield,
   Star,
   ExternalLink,
+  ShoppingCart,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -28,7 +29,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ProductCard } from '@/components/product-card';
 import { categories, formatTZS, formatRelativeTime, Product } from '@/lib/data';
 import { getAllProducts } from '@/lib/mock-data';
-import { useWishlistStore, useThemeStore } from '@/lib/store';
+import { useWishlistStore, useThemeStore, useCartStore, useChatStore, useAuthStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
 export default function ProductDetailPage() {
@@ -36,6 +37,9 @@ export default function ProductDetailPage() {
   const productId = params.id as string;
   const { themeId } = useThemeStore();
   const { isInWishlist, addItem, removeItem } = useWishlistStore();
+  const addToCart = useCartStore((state) => state.addItem);
+  const { addConversation, setActiveConversation, openChat, getConversation } = useChatStore();
+  const { user } = useAuthStore();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showPhone, setShowPhone] = useState(false);
 
@@ -74,6 +78,51 @@ export default function ProductDetailPage() {
     } else {
       addItem(product.id);
     }
+  };
+
+  const handleStartChat = () => {
+    if (!product || !user) {
+      // Redirect to login if not logged in
+      window.location.href = '/auth/login';
+      return;
+    }
+
+    // Check if conversation already exists
+    const existing = getConversation(product.id, product.sellerId);
+    if (existing) {
+      setActiveConversation(existing.id);
+      openChat();
+      return;
+    }
+
+    // Create new conversation
+    const conversationId = addConversation({
+      productId: product.id,
+      productTitle: product.title,
+      productImage: product.images[0] || '',
+      productPrice: product.price,
+      buyerId: user.id,
+      buyerName: user.name,
+      sellerId: product.sellerId,
+      sellerName: product.sellerName,
+      sellerVerified: product.sellerVerified,
+    });
+
+    setActiveConversation(conversationId);
+    openChat();
+  };
+
+  const handleAddToCart = () => {
+    if (!product) return;
+    addToCart({
+      productId: product.id,
+      name: product.title,
+      price: product.price,
+      quantity: 1,
+      image: product.images[0] || '',
+      sellerId: product.sellerId,
+      sellerName: product.sellerName,
+    });
   };
 
   if (!product) {
@@ -454,11 +503,11 @@ export default function ProductDetailPage() {
                   {formatTZS(product.price)}
                 </p>
                 <div className="flex gap-2">
-                  <Button className="flex-1 gap-2" onClick={() => setShowPhone(!showPhone)}>
-                    <Phone className="w-4 h-4" />
-                    {showPhone ? '+255 XXX XXX XXX' : 'Show Phone'}
+                  <Button className="flex-1 gap-2" onClick={handleAddToCart}>
+                    <ShoppingCart className="w-4 h-4" />
+                    Add to Cart
                   </Button>
-                  <Button variant="outline" className="flex-1 gap-2">
+                  <Button variant="outline" className="flex-1 gap-2" onClick={handleStartChat}>
                     <MessageCircle className="w-4 h-4" />
                     Chat
                   </Button>
@@ -559,6 +608,7 @@ export default function ProductDetailPage() {
                       'w-full gap-2',
                       themeId === 'kilimanjaro' && 'rounded-none uppercase font-bold h-12'
                     )}
+                    onClick={handleStartChat}
                   >
                     <MessageCircle className="w-4 h-4" />
                     Start Chat
