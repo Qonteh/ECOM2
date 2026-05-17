@@ -24,7 +24,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ThemeSwitcher } from '@/components/theme-provider';
-import { useAuthStore, useCartStore, useWishlistStore } from '@/lib/store';
+import { useAuthStore, useCartStore, useWishlistStore, useChatStore } from '@/lib/store';
 import { categories } from '@/lib/data';
 
 export function Header() {
@@ -33,6 +33,7 @@ export function Header() {
   const { user } = useAuthStore();
   const cartItems = useCartStore((state) => state.getTotalItems());
   const wishlistItems = useWishlistStore((state) => state.items.length);
+  const unreadMessages = useChatStore((state) => state.getTotalUnread());
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -95,11 +96,17 @@ export function Header() {
 
           {/* Actions */}
           <div className="flex items-center gap-1 sm:gap-2 ml-auto">
-            {/* Notifications */}
-            <Button variant="ghost" size="icon" className="relative hidden sm:flex">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full" />
-            </Button>
+            {/* Notifications / Messages */}
+            <Link href="/messages">
+              <Button variant="ghost" size="icon" className="relative hidden sm:flex">
+                <Bell className="w-5 h-5" />
+                {unreadMessages > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
+                    {unreadMessages > 9 ? '9+' : unreadMessages}
+                  </span>
+                )}
+              </Button>
+            </Link>
 
             {/* Wishlist */}
             <Link href="/wishlist">

@@ -1,18 +1,43 @@
 'use client';
 
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { ArrowRight, TrendingUp, Shield, Users, Zap, MapPin, Search, Star, Sparkles, ChevronRight } from 'lucide-react';
+import {
+  ArrowRight,
+  TrendingUp,
+  Shield,
+  Users,
+  Zap,
+  MapPin,
+  Search,
+  Star,
+  Sparkles,
+  ChevronRight,
+  BadgeCheck,
+  ShoppingBag,
+  MessageCircle,
+  CreditCard,
+  Truck,
+  Clock,
+  Heart,
+  Play,
+  CheckCircle2,
+  ArrowUpRight,
+  Store,
+  Smartphone,
+  Globe,
+  Lock,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { ProductCard, ProductGrid } from '@/components/product-card';
+import { ProductGrid } from '@/components/product-card';
 import { CategoryGrid } from '@/components/category-card';
 import { categories, regions, formatTZS } from '@/lib/data';
 import { getAllProducts } from '@/lib/mock-data';
 import { useThemeStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
-import { useMemo } from 'react';
 
 export default function HomePage() {
   const allProducts = useMemo(() => getAllProducts(), []);
@@ -21,563 +46,390 @@ export default function HomePage() {
   const { themeId } = useThemeStore();
 
   return (
-    <div className="min-h-screen">
-      {/* SAFARI THEME HERO */}
-      {themeId === 'safari' && (
-        <section className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-background to-accent/5">
-          <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5" />
-          <div className="container mx-auto px-4 py-12 md:py-20 relative">
-            <div className="max-w-3xl mx-auto text-center">
-              <Badge variant="secondary" className="mb-4">
-                Karibu Soko Tanzania
-              </Badge>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-balance">
-                Buy & Sell{' '}
-                <span className="text-primary">Anything</span> in Tanzania
-              </h1>
-              <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto text-pretty">
-                Tanzania&apos;s largest online marketplace. Find the best deals on electronics,
-                vehicles, property, fashion and more across all regions.
-              </p>
-              <SearchBox />
-              <PopularSearches />
-            </div>
-          </div>
-          <StatsBar />
-        </section>
-      )}
+    <div className="min-h-screen overflow-x-hidden">
+      {/* New Premium Hero Section */}
+      <HeroSection />
 
-      {/* OCEAN THEME HERO - Split layout with glass morphism */}
-      {themeId === 'ocean' && (
-        <section className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-accent/10" />
-          <div className="absolute inset-0 backdrop-blur-3xl" />
-          <div className="container mx-auto px-4 py-16 md:py-24 relative">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <Badge className="mb-4 rounded-full px-4 py-1 bg-primary/10 text-primary border-primary/20">
-                  <Sparkles className="w-3 h-3 mr-1" /> Tanzania&apos;s #1 Marketplace
-                </Badge>
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-light mb-6 text-balance leading-tight">
-                  Discover Amazing
-                  <span className="block font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                    Products & Services
-                  </span>
-                </h1>
-                <p className="text-lg text-muted-foreground mb-8 text-pretty">
-                  From Dar es Salaam to Zanzibar, connect with trusted buyers and sellers across Tanzania.
-                </p>
-                <div className="flex flex-wrap gap-4">
-                  <Link href="/categories">
-                    <Button size="lg" className="rounded-full gap-2 px-6">
-                      Start Exploring <ArrowRight className="w-4 h-4" />
-                    </Button>
-                  </Link>
-                  <Link href="/sell">
-                    <Button size="lg" variant="outline" className="rounded-full px-6">
-                      Post Free Ad
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-3xl blur-3xl" />
-                <div className="relative bg-card/60 backdrop-blur-xl rounded-3xl p-6 border border-border/50">
-                  <SearchBox variant="ocean" />
-                  <div className="mt-6 grid grid-cols-2 gap-4">
-                    <StatCard icon={<Users />} value="100K+" label="Active Users" />
-                    <StatCard icon={<Star />} value="50K+" label="Listings" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
+      {/* Animated Stats Bar */}
+      <AnimatedStatsBar />
 
-      {/* KILIMANJARO THEME HERO - Full width bold design */}
-      {themeId === 'kilimanjaro' && (
-        <section className="relative bg-foreground text-background overflow-hidden">
-          <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.05)_25%,rgba(255,255,255,0.05)_50%,transparent_50%,transparent_75%,rgba(255,255,255,0.05)_75%)] bg-[length:64px_64px]" />
-          <div className="container mx-auto px-4 py-16 md:py-24 relative">
-            <div className="max-w-4xl">
-              <div className="inline-block bg-primary text-primary-foreground px-4 py-2 mb-6">
-                <span className="text-sm font-bold uppercase tracking-wider">Tanzania Marketplace</span>
-              </div>
-              <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 uppercase tracking-tight leading-none">
-                Buy.<br />Sell.<br />
-                <span className="text-primary">Win.</span>
-              </h1>
-              <p className="text-xl text-background/70 mb-8 max-w-xl font-light">
-                The boldest marketplace in East Africa. No limits. No boundaries. Just pure commerce.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <Link href="/categories">
-                  <Button size="lg" className="rounded-none h-14 px-8 text-lg font-bold uppercase bg-primary hover:bg-primary/90">
-                    Shop Now
-                  </Button>
-                </Link>
-                <Link href="/sell">
-                  <Button size="lg" variant="outline" className="rounded-none h-14 px-8 text-lg font-bold uppercase border-2 border-background text-background hover:bg-background hover:text-foreground">
-                    Sell Yours
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-          <div className="border-t-4 border-primary">
-            <div className="container mx-auto px-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-background/20">
-                <KiliStat value="50K+" label="Products" />
-                <KiliStat value="100K+" label="Users" />
-                <KiliStat value="26" label="Regions" />
-                <KiliStat value="24/7" label="Support" />
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* SERENGETI THEME HERO - Minimal organic design */}
-      {themeId === 'serengeti' && (
-        <section className="relative overflow-hidden bg-gradient-to-b from-primary/5 to-background">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
-          <div className="container mx-auto px-4 py-20 md:py-32 relative">
-            <div className="max-w-2xl mx-auto text-center">
-              <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-4 py-2 mb-8">
-                <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-                <span className="text-sm text-primary font-medium">Live in All 26 Regions</span>
-              </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-balance leading-tight">
-                Your Marketplace for
-                <span className="block text-primary">Authentic Tanzania</span>
-              </h1>
-              <p className="text-xl text-muted-foreground mb-10 text-pretty leading-relaxed">
-                Connect with real people, find genuine products, and support local businesses across the beautiful land of Tanzania.
-              </p>
-              <SearchBox variant="serengeti" />
-              <div className="flex flex-wrap items-center justify-center gap-6 mt-10 text-sm text-muted-foreground">
-                <span className="flex items-center gap-2">
-                  <Shield className="w-5 h-5 text-primary" /> Verified Sellers
-                </span>
-                <span className="flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-primary" /> Instant Connect
-                </span>
-                <span className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-primary" /> Local First
-                </span>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
+      {/* Trust Badges */}
+      <TrustSection />
 
       {/* Categories Section */}
-      <section className={cn('py-12',
-        themeId === 'ocean' && 'py-16 bg-gradient-to-b from-muted/30 to-background',
-        themeId === 'kilimanjaro' && 'py-16 bg-muted',
-        themeId === 'serengeti' && 'py-20'
-      )}>
+      <section className="py-16 md:py-24 bg-muted/30">
         <div className="container mx-auto px-4">
           <SectionHeader
-            title="Browse Categories"
-            subtitle="Find what you need by category"
-            link="/categories"
-            linkText="View All"
+            badge="Browse"
+            title="Shop by Category"
+            subtitle="Find exactly what you need"
           />
           <CategoryGrid variant="large" />
-        </div>
-      </section>
-
-      {/* Featured Products */}
-      <section className={cn('py-12',
-        themeId === 'safari' && 'bg-muted/30',
-        themeId === 'ocean' && 'py-16',
-        themeId === 'kilimanjaro' && 'py-16 bg-background',
-        themeId === 'serengeti' && 'py-20 bg-muted/20'
-      )}>
-        <div className="container mx-auto px-4">
-          <SectionHeader
-            title="Featured Listings"
-            subtitle="Hand-picked top quality ads"
-            link="/featured"
-            linkText="See All"
-            icon={<Star className="w-5 h-5" />}
-          />
-          <ProductGrid products={featuredProducts} columns={4} />
-        </div>
-      </section>
-
-      {/* Recent Products */}
-      <section className={cn('py-12',
-        themeId === 'ocean' && 'py-16 bg-muted/30',
-        themeId === 'kilimanjaro' && 'py-16 bg-muted',
-        themeId === 'serengeti' && 'py-20'
-      )}>
-        <div className="container mx-auto px-4">
-          <SectionHeader
-            title="Latest Listings"
-            subtitle="Fresh ads just posted"
-            link="/recent"
-            linkText="View More"
-            icon={<TrendingUp className="w-5 h-5" />}
-          />
-          <ProductGrid products={recentProducts} columns={4} />
-        </div>
-      </section>
-
-      {/* Regions Section */}
-      <section className={cn('py-12',
-        themeId === 'safari' && 'bg-muted/30',
-        themeId === 'ocean' && 'py-16',
-        themeId === 'kilimanjaro' && 'py-16 bg-background',
-        themeId === 'serengeti' && 'py-20 bg-muted/20'
-      )}>
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-8">
-            <h2 className={cn('text-2xl font-bold mb-2',
-              themeId === 'kilimanjaro' && 'text-3xl uppercase tracking-tight'
-            )}>Shop by Region</h2>
-            <p className="text-muted-foreground">Find items near you across Tanzania</p>
-          </div>
-          <div className={cn('grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3',
-            themeId === 'ocean' && 'gap-4',
-            themeId === 'kilimanjaro' && 'gap-1',
-            themeId === 'serengeti' && 'gap-5'
-          )}>
-            {regions.slice(0, 12).map((region) => (
-              <RegionCard key={region} region={region} />
-            ))}
-          </div>
-          <div className="text-center mt-6">
-            <Link href="/regions">
-              <Button variant="outline" className={cn('gap-2',
-                themeId === 'ocean' && 'rounded-full',
-                themeId === 'kilimanjaro' && 'rounded-none uppercase font-bold',
-                themeId === 'serengeti' && 'rounded-2xl'
-              )}>
-                View All Regions <ArrowRight className="w-4 h-4" />
+          <div className="text-center mt-10">
+            <Link href="/categories">
+              <Button variant="outline" size="lg" className="gap-2 rounded-full px-8">
+                View All Categories <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <FeaturesSection />
-
-      {/* CTA Section */}
-      <CTASection />
-    </div>
-  );
-}
-
-// Reusable Components
-function SearchBox({ variant = 'default' }: { variant?: 'default' | 'ocean' | 'serengeti' }) {
-  const { themeId } = useThemeStore();
-  const effectiveVariant = variant === 'default' ? themeId : variant;
-
-  if (effectiveVariant === 'ocean') {
-    return (
-      <form className="space-y-4">
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="What are you looking for?"
-            className="pl-12 h-14 text-lg rounded-2xl border-border/50 bg-background/50 backdrop-blur-sm"
+      {/* Featured Products */}
+      <section className="py-16 md:py-24">
+        <div className="container mx-auto px-4">
+          <SectionHeader
+            badge="Featured"
+            title="Top Picks for You"
+            subtitle="Handpicked premium listings from verified sellers"
+            icon={<Star className="w-5 h-5" />}
           />
+          <ProductGrid products={featuredProducts} columns={4} />
+          <div className="text-center mt-10">
+            <Link href="/featured">
+              <Button size="lg" className="gap-2 rounded-full px-8">
+                Explore All Featured <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <select className="flex-1 h-12 px-4 rounded-xl bg-background/50 backdrop-blur-sm border border-border/50 text-sm">
-            <option value="">All Categories</option>
-            {categories.slice(0, 6).map((cat) => (
-              <option key={cat.id} value={cat.slug}>{cat.name}</option>
+      </section>
+
+      {/* How it Works */}
+      <HowItWorksSection />
+
+      {/* Recent Products */}
+      <section className="py-16 md:py-24 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <SectionHeader
+            badge="Fresh"
+            title="Just Listed"
+            subtitle="Discover the newest additions to our marketplace"
+            icon={<TrendingUp className="w-5 h-5" />}
+          />
+          <ProductGrid products={recentProducts} columns={4} />
+          <div className="text-center mt-10">
+            <Link href="/recent">
+              <Button variant="outline" size="lg" className="gap-2 rounded-full px-8">
+                See More Listings <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <BenefitsSection />
+
+      {/* Regions Section */}
+      <section className="py-16 md:py-24">
+        <div className="container mx-auto px-4">
+          <SectionHeader
+            badge="Local"
+            title="Shop by Region"
+            subtitle="Find items near you across Tanzania"
+            icon={<MapPin className="w-5 h-5" />}
+          />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {regions.slice(0, 12).map((region, idx) => (
+              <Link
+                key={region}
+                href={`/region/${region.toLowerCase().replace(/\s+/g, '-')}`}
+                className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/5 to-accent/5 border border-border p-5 text-center transition-all duration-300 hover:shadow-lg hover:border-primary/30 hover:-translate-y-1"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <MapPin className="w-6 h-6 mx-auto mb-2 text-primary" />
+                <span className="font-medium text-sm block">{region}</span>
+                <span className="text-xs text-muted-foreground">
+                  {Math.floor(Math.random() * 500 + 100)}+ ads
+                </span>
+              </Link>
             ))}
-          </select>
-          <Button className="h-12 px-8 rounded-xl">Search</Button>
-        </div>
-      </form>
-    );
-  }
-
-  if (effectiveVariant === 'serengeti') {
-    return (
-      <form className="max-w-xl mx-auto">
-        <div className="flex items-center gap-2 p-2 bg-card rounded-full border shadow-lg">
-          <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search products, services..."
-              className="pl-12 h-12 border-0 bg-transparent focus-visible:ring-0 text-base"
-            />
           </div>
-          <Button size="lg" className="h-12 px-8 rounded-full">
-            Search
-          </Button>
+          <div className="text-center mt-10">
+            <Link href="/regions">
+              <Button variant="outline" size="lg" className="gap-2 rounded-full px-8">
+                View All 26 Regions <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
         </div>
-      </form>
-    );
-  }
+      </section>
 
-  if (effectiveVariant === 'kilimanjaro') {
-    return (
-      <form className="max-w-2xl">
-        <div className="flex">
-          <Input
-            type="search"
-            placeholder="SEARCH ANYTHING..."
-            className="h-14 rounded-none border-2 border-background bg-transparent text-background placeholder:text-background/50 text-lg font-medium uppercase"
-          />
-          <Button size="lg" className="h-14 px-8 rounded-none bg-primary text-primary-foreground font-bold uppercase">
-            Go
-          </Button>
-        </div>
-      </form>
-    );
-  }
+      {/* Testimonials */}
+      <TestimonialsSection />
 
-  // Safari default
+      {/* Final CTA */}
+      <FinalCTASection />
+    </div>
+  );
+}
+
+// Hero Section
+function HeroSection() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [activeWord, setActiveWord] = useState(0);
+  const words = ['Electronics', 'Vehicles', 'Fashion', 'Property', 'Jobs'];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveWord((prev) => (prev + 1) % words.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <div className="max-w-2xl mx-auto">
-      <form className="flex flex-col sm:flex-row gap-3 p-2 bg-card rounded-2xl border border-border shadow-lg">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="What are you looking for?"
-            className="pl-10 h-12 border-0 bg-transparent focus-visible:ring-0"
-          />
-        </div>
-        <div className="relative flex-1 hidden sm:block">
-          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-          <select className="w-full h-12 pl-10 pr-4 rounded-xl bg-muted/50 border-0 text-sm focus:ring-2 focus:ring-primary appearance-none cursor-pointer">
-            <option value="">All Tanzania</option>
-            {regions.slice(0, 10).map((region) => (
-              <option key={region} value={region}>{region}</option>
+    <section className="relative min-h-[90vh] flex items-center overflow-hidden">
+      {/* Animated background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-primary/5" />
+      <div className="absolute inset-0">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
+      </div>
+
+      {/* Grid pattern overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:50px_50px]" />
+
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="max-w-4xl mx-auto text-center">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-2 mb-8">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+            </span>
+            <span className="text-sm font-medium text-primary">
+              Tanzania&apos;s #1 Marketplace
+            </span>
+          </div>
+
+          {/* Main heading */}
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight text-balance">
+            Buy & Sell{' '}
+            <span className="relative inline-block">
+              <span className="relative z-10 bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">
+                {words[activeWord]}
+              </span>
+              <span className="absolute bottom-2 left-0 w-full h-3 bg-primary/20 -z-10 rounded" />
+            </span>
+            <br />
+            <span className="text-foreground">Across Tanzania</span>
+          </h1>
+
+          {/* Subtitle */}
+          <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-2xl mx-auto text-pretty leading-relaxed">
+            Join over <span className="text-foreground font-semibold">100,000+</span> Tanzanians buying and selling on the most trusted marketplace.
+          </p>
+
+          {/* Search Box */}
+          <div className="max-w-3xl mx-auto">
+            <div className="flex flex-col sm:flex-row gap-3 p-3 bg-card/80 backdrop-blur-xl rounded-2xl border border-border shadow-2xl shadow-primary/5">
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="What are you looking for?"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-12 h-14 text-lg border-0 bg-transparent focus-visible:ring-0"
+                />
+              </div>
+              <div className="hidden sm:block w-px bg-border" />
+              <div className="relative flex-1 hidden sm:block">
+                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <select
+                  className="w-full h-14 pl-12 pr-4 rounded-xl bg-transparent border-0 text-base appearance-none cursor-pointer focus:ring-0 focus:outline-none"
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                >
+                  <option value="">All Tanzania</option>
+                  {regions.slice(0, 10).map((region) => (
+                    <option key={region} value={region}>{region}</option>
+                  ))}
+                </select>
+              </div>
+              <Button size="lg" className="h-14 px-8 rounded-xl text-base font-semibold gap-2">
+                <Search className="w-5 h-5" />
+                Search
+              </Button>
+            </div>
+          </div>
+
+          {/* Popular searches */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+            <span className="text-sm text-muted-foreground">Popular:</span>
+            {['iPhone 15', 'Toyota Hilux', 'Apartment Rent', 'Samsung TV', 'Nike Shoes'].map((term) => (
+              <Link
+                key={term}
+                href={`/search?q=${term}`}
+                className="px-4 py-2 rounded-full bg-muted/80 hover:bg-primary hover:text-primary-foreground text-sm transition-all duration-300 hover:scale-105"
+              >
+                {term}
+              </Link>
             ))}
-          </select>
-        </div>
-        <Button size="lg" className="h-12 px-8">Search</Button>
-      </form>
-    </div>
-  );
-}
+          </div>
 
-function PopularSearches() {
-  return (
-    <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-      <span className="text-sm text-muted-foreground">Popular:</span>
-      {['iPhone', 'Toyota', 'House Rent', 'Laptop', 'Furniture'].map((term) => (
-        <Link
-          key={term}
-          href={`/search?q=${term}`}
-          className="px-3 py-1 rounded-full bg-muted text-sm hover:bg-primary hover:text-primary-foreground transition-colors"
-        >
-          {term}
-        </Link>
-      ))}
-    </div>
-  );
-}
-
-function StatsBar() {
-  return (
-    <div className="border-t border-border bg-muted/30">
-      <div className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          <div>
-            <p className="text-2xl md:text-3xl font-bold text-primary">50K+</p>
-            <p className="text-sm text-muted-foreground">Active Listings</p>
-          </div>
-          <div>
-            <p className="text-2xl md:text-3xl font-bold text-primary">100K+</p>
-            <p className="text-sm text-muted-foreground">Happy Users</p>
-          </div>
-          <div>
-            <p className="text-2xl md:text-3xl font-bold text-primary">26</p>
-            <p className="text-sm text-muted-foreground">Regions Covered</p>
-          </div>
-          <div>
-            <p className="text-2xl md:text-3xl font-bold text-primary">8</p>
-            <p className="text-sm text-muted-foreground">Categories</p>
+          {/* Quick actions */}
+          <div className="mt-12 flex flex-wrap items-center justify-center gap-4">
+            <Link href="/sell">
+              <Button size="lg" variant="outline" className="gap-2 rounded-full px-8 h-12">
+                <Store className="w-5 h-5" />
+                Post Free Ad
+              </Button>
+            </Link>
+            <Link href="/benefits">
+              <Button size="lg" variant="ghost" className="gap-2 rounded-full px-8 h-12">
+                How It Works
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
-    </div>
-  );
-}
 
-function StatCard({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
-  return (
-    <div className="text-center p-4 rounded-xl bg-background/50 backdrop-blur-sm">
-      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2 text-primary">
-        {icon}
+      {/* Scroll indicator */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+        <div className="w-8 h-12 rounded-full border-2 border-muted-foreground/30 flex items-start justify-center p-2">
+          <div className="w-1 h-3 bg-muted-foreground/50 rounded-full animate-pulse" />
+        </div>
       </div>
-      <p className="text-2xl font-bold">{value}</p>
-      <p className="text-sm text-muted-foreground">{label}</p>
-    </div>
+    </section>
   );
 }
 
-function KiliStat({ value, label }: { value: string; label: string }) {
+// Animated Stats Bar
+function AnimatedStatsBar() {
+  const stats = [
+    { value: '100K+', label: 'Active Users', icon: Users },
+    { value: '50K+', label: 'Live Listings', icon: ShoppingBag },
+    { value: '26', label: 'Regions', icon: MapPin },
+    { value: '24/7', label: 'Support', icon: MessageCircle },
+  ];
+
   return (
-    <div className="py-6 text-center">
-      <p className="text-3xl md:text-4xl font-black text-primary">{value}</p>
-      <p className="text-sm uppercase tracking-wider text-background/60">{label}</p>
-    </div>
+    <section className="py-8 bg-foreground text-background">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          {stats.map((stat, idx) => (
+            <div key={idx} className="text-center group">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-background/10 mb-3 group-hover:scale-110 transition-transform">
+                <stat.icon className="w-6 h-6 text-primary" />
+              </div>
+              <p className="text-3xl md:text-4xl font-bold text-primary mb-1">{stat.value}</p>
+              <p className="text-sm text-background/70">{stat.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
-function SectionHeader({ title, subtitle, link, linkText, icon }: {
+// Trust Section
+function TrustSection() {
+  const badges = [
+    { icon: Shield, text: 'Buyer Protection' },
+    { icon: BadgeCheck, text: 'Verified Sellers' },
+    { icon: Lock, text: 'Secure Payments' },
+    { icon: Truck, text: 'Fast Delivery' },
+    { icon: MessageCircle, text: 'Direct Chat' },
+    { icon: Clock, text: '24/7 Support' },
+  ];
+
+  return (
+    <section className="py-12 border-b border-border">
+      <div className="container mx-auto px-4">
+        <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
+          {badges.map((badge, idx) => (
+            <div key={idx} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+              <badge.icon className="w-5 h-5 text-primary" />
+              <span className="text-sm font-medium">{badge.text}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// Section Header
+function SectionHeader({
+  badge,
+  title,
+  subtitle,
+  icon,
+}: {
+  badge?: string;
   title: string;
   subtitle: string;
-  link: string;
-  linkText: string;
   icon?: React.ReactNode;
 }) {
-  const { themeId } = useThemeStore();
-
   return (
-    <div className={cn('flex items-center justify-between mb-8',
-      themeId === 'serengeti' && 'mb-12'
-    )}>
-      <div className={cn('flex items-center gap-3',
-        themeId === 'kilimanjaro' && 'gap-4'
-      )}>
-        {icon && (
-          <div className={cn(
-            'w-10 h-10 flex items-center justify-center',
-            themeId === 'safari' && 'rounded-xl bg-primary/10 text-primary',
-            themeId === 'ocean' && 'rounded-full bg-primary/10 text-primary',
-            themeId === 'kilimanjaro' && 'bg-primary text-primary-foreground',
-            themeId === 'serengeti' && 'rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 text-primary'
-          )}>
-            {icon}
-          </div>
-        )}
-        <div>
-          <h2 className={cn('text-2xl font-bold',
-            themeId === 'kilimanjaro' && 'text-3xl uppercase tracking-tight',
-            themeId === 'serengeti' && 'text-3xl'
-          )}>{title}</h2>
-          <p className="text-muted-foreground">{subtitle}</p>
-        </div>
-      </div>
-      <Link href={link}>
-        <Button variant="outline" className={cn('gap-2',
-          themeId === 'ocean' && 'rounded-full',
-          themeId === 'kilimanjaro' && 'rounded-none uppercase font-bold',
-          themeId === 'serengeti' && 'rounded-2xl'
-        )}>
-          {linkText} <ArrowRight className="w-4 h-4" />
-        </Button>
-      </Link>
+    <div className="text-center mb-12">
+      {badge && (
+        <Badge variant="secondary" className="mb-4 px-4 py-1 text-sm">
+          {icon && <span className="mr-2">{icon}</span>}
+          {badge}
+        </Badge>
+      )}
+      <h2 className="text-3xl md:text-4xl font-bold mb-4 text-balance">{title}</h2>
+      <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">{subtitle}</p>
     </div>
   );
 }
 
-function RegionCard({ region }: { region: string }) {
-  const { themeId } = useThemeStore();
-
-  return (
-    <Link href={`/region/${region.toLowerCase().replace(' ', '-')}`}>
-      <Card className={cn('hover:shadow-md transition-all hover:border-primary/50 cursor-pointer',
-        themeId === 'ocean' && 'rounded-2xl bg-card/60 backdrop-blur-sm border-border/50 hover:bg-card',
-        themeId === 'kilimanjaro' && 'rounded-none border-2 hover:border-primary hover:bg-primary/5',
-        themeId === 'serengeti' && 'rounded-2xl hover:shadow-lg hover:-translate-y-0.5'
-      )}>
-        <CardContent className={cn('p-4 text-center',
-          themeId === 'serengeti' && 'p-5'
-        )}>
-          <MapPin className={cn('w-6 h-6 mx-auto mb-2',
-            themeId === 'safari' && 'text-primary',
-            themeId === 'ocean' && 'text-primary/80',
-            themeId === 'kilimanjaro' && 'text-primary',
-            themeId === 'serengeti' && 'text-primary'
-          )} />
-          <p className={cn('font-medium text-sm',
-            themeId === 'kilimanjaro' && 'uppercase tracking-wide text-xs font-bold'
-          )}>{region}</p>
-        </CardContent>
-      </Card>
-    </Link>
-  );
-}
-
-function FeaturesSection() {
-  const { themeId } = useThemeStore();
-
-  const features = [
+// How It Works Section
+function HowItWorksSection() {
+  const steps = [
     {
-      icon: <Shield className="w-7 h-7" />,
-      title: 'Secure Transactions',
-      description: 'Verified sellers and secure payment options including M-Pesa',
+      icon: Search,
+      title: 'Browse & Discover',
+      description: 'Search through thousands of listings across 8 categories and 26 regions.',
+      color: 'from-blue-500/20 to-cyan-500/20',
     },
     {
-      icon: <Users className="w-7 h-7" />,
-      title: 'Large Community',
-      description: 'Over 100,000 active buyers and sellers across Tanzania',
+      icon: MessageCircle,
+      title: 'Chat with Sellers',
+      description: 'Message sellers directly, ask questions, negotiate prices in real-time.',
+      color: 'from-green-500/20 to-emerald-500/20',
     },
     {
-      icon: <Zap className="w-7 h-7" />,
-      title: 'Easy to Use',
-      description: 'Post your ad in minutes and reach thousands of buyers instantly',
+      icon: CreditCard,
+      title: 'Pay Securely',
+      description: 'Use M-Pesa, Tigo Pesa, Airtel Money, or Cash on Delivery.',
+      color: 'from-purple-500/20 to-pink-500/20',
     },
     {
-      icon: <MapPin className="w-7 h-7" />,
-      title: 'All Regions',
-      description: 'Available in all 26 regions of Tanzania including Zanzibar',
+      icon: CheckCircle2,
+      title: 'Enjoy Your Purchase',
+      description: 'Receive your item and leave a review to help the community.',
+      color: 'from-orange-500/20 to-amber-500/20',
     },
   ];
 
   return (
-    <section className={cn('py-16',
-      themeId === 'kilimanjaro' && 'py-20 bg-foreground text-background',
-      themeId === 'serengeti' && 'py-24'
-    )}>
+    <section className="py-16 md:py-24 bg-gradient-to-b from-background to-muted/30">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className={cn('text-2xl md:text-3xl font-bold mb-3',
-            themeId === 'kilimanjaro' && 'text-4xl uppercase tracking-tight'
-          )}>Why Choose Soko Tanzania?</h2>
-          <p className={cn('max-w-2xl mx-auto',
-            themeId === 'kilimanjaro' ? 'text-background/70' : 'text-muted-foreground'
-          )}>
-            We provide a safe, secure, and easy way to buy and sell in Tanzania
-          </p>
-        </div>
-        <div className={cn('grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6',
-          themeId === 'serengeti' && 'gap-8'
-        )}>
-          {features.map((feature, i) => (
-            <Card key={i} className={cn('border-0 shadow-none bg-transparent',
-              themeId === 'ocean' && 'bg-card/60 backdrop-blur-sm rounded-2xl border border-border/50 shadow-sm',
-              themeId === 'kilimanjaro' && 'bg-background/10 rounded-none border-2 border-background/20',
-              themeId === 'serengeti' && 'bg-card rounded-3xl shadow-lg'
-            )}>
-              <CardContent className={cn('p-6 text-center',
-                themeId === 'serengeti' && 'p-8'
-              )}>
-                <div className={cn(
-                  'w-14 h-14 flex items-center justify-center mx-auto mb-4',
-                  themeId === 'safari' && 'rounded-2xl bg-primary/10 text-primary',
-                  themeId === 'ocean' && 'rounded-full bg-gradient-to-br from-primary/20 to-accent/20 text-primary',
-                  themeId === 'kilimanjaro' && 'bg-primary text-primary-foreground',
-                  themeId === 'serengeti' && 'rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 text-primary'
-                )}>
-                  {feature.icon}
+        <SectionHeader
+          badge="Easy Steps"
+          title="How Soko Works"
+          subtitle="Buy and sell with confidence in just a few simple steps"
+        />
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {steps.map((step, idx) => (
+            <Card key={idx} className="relative overflow-hidden border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group">
+              <div className={`absolute inset-0 bg-gradient-to-br ${step.color} opacity-0 group-hover:opacity-100 transition-opacity`} />
+              <CardContent className="p-6 relative">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <step.icon className="w-6 h-6 text-primary" />
+                  </div>
+                  <span className="text-4xl font-bold text-muted-foreground/30">0{idx + 1}</span>
                 </div>
-                <h3 className={cn('font-semibold text-lg mb-2',
-                  themeId === 'kilimanjaro' && 'uppercase tracking-wide'
-                )}>{feature.title}</h3>
-                <p className={cn('text-sm',
-                  themeId === 'kilimanjaro' ? 'text-background/60' : 'text-muted-foreground'
-                )}>
-                  {feature.description}
-                </p>
+                <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
+                <p className="text-muted-foreground">{step.description}</p>
               </CardContent>
             </Card>
           ))}
@@ -587,56 +439,186 @@ function FeaturesSection() {
   );
 }
 
-function CTASection() {
-  const { themeId } = useThemeStore();
+// Benefits Section
+function BenefitsSection() {
+  return (
+    <section className="py-16 md:py-24 bg-foreground text-background overflow-hidden">
+      <div className="container mx-auto px-4">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* Left: For Buyers */}
+          <div className="space-y-8">
+            <Badge className="bg-primary/20 text-primary border-primary/30 px-4 py-1">
+              For Buyers
+            </Badge>
+            <h2 className="text-4xl md:text-5xl font-bold text-balance">
+              Shop Smarter,<br />
+              <span className="text-primary">Save More</span>
+            </h2>
+            <div className="space-y-4">
+              {[
+                { icon: Shield, text: 'Buyer protection on every purchase' },
+                { icon: MessageCircle, text: 'Chat directly with verified sellers' },
+                { icon: CreditCard, text: 'Multiple payment options including M-Pesa' },
+                { icon: Heart, text: 'Save favorites and get price drop alerts' },
+              ].map((item, idx) => (
+                <div key={idx} className="flex items-center gap-4 group">
+                  <div className="w-10 h-10 rounded-xl bg-background/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    <item.icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <span className="text-lg text-background/80">{item.text}</span>
+                </div>
+              ))}
+            </div>
+            <Link href="/benefits/buyer">
+              <Button size="lg" className="gap-2 rounded-full px-8">
+                Learn More <ArrowUpRight className="w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
+
+          {/* Right: For Sellers */}
+          <div className="space-y-8">
+            <Badge className="bg-accent/20 text-accent border-accent/30 px-4 py-1">
+              For Sellers
+            </Badge>
+            <h2 className="text-4xl md:text-5xl font-bold text-balance">
+              Grow Your<br />
+              <span className="text-accent">Business</span>
+            </h2>
+            <div className="space-y-4">
+              {[
+                { icon: Zap, text: 'Post free ads and reach millions' },
+                { icon: TrendingUp, text: 'Boost listings to get 10x more views' },
+                { icon: Users, text: 'Build your seller reputation' },
+                { icon: Globe, text: 'Sell across all 26 regions' },
+              ].map((item, idx) => (
+                <div key={idx} className="flex items-center gap-4 group">
+                  <div className="w-10 h-10 rounded-xl bg-background/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
+                    <item.icon className="w-5 h-5 text-accent" />
+                  </div>
+                  <span className="text-lg text-background/80">{item.text}</span>
+                </div>
+              ))}
+            </div>
+            <Link href="/benefits/seller">
+              <Button size="lg" variant="secondary" className="gap-2 rounded-full px-8">
+                Start Selling <ArrowUpRight className="w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// Testimonials Section
+function TestimonialsSection() {
+  const testimonials = [
+    {
+      name: 'Amina Hassan',
+      role: 'Buyer from Dar es Salaam',
+      text: 'Found my dream car at an amazing price. The seller was verified and the whole process was smooth!',
+      rating: 5,
+    },
+    {
+      name: 'John Mwangi',
+      role: 'Seller, Electronics Shop',
+      text: 'My business grew 300% after joining Soko. The platform makes it so easy to reach customers.',
+      rating: 5,
+    },
+    {
+      name: 'Grace Kimaro',
+      role: 'Buyer from Arusha',
+      text: 'Love the chat feature! I can negotiate directly with sellers and get the best deals.',
+      rating: 5,
+    },
+  ];
 
   return (
-    <section className={cn(
-      'py-16',
-      themeId === 'safari' && 'bg-primary text-primary-foreground',
-      themeId === 'ocean' && 'bg-gradient-to-r from-primary to-accent text-white',
-      themeId === 'kilimanjaro' && 'bg-primary',
-      themeId === 'serengeti' && 'bg-gradient-to-br from-primary via-primary to-accent text-primary-foreground'
-    )}>
-      <div className="container mx-auto px-4 text-center">
-        <h2 className={cn('text-2xl md:text-3xl font-bold mb-4',
-          themeId === 'kilimanjaro' && 'text-4xl uppercase tracking-tight text-primary-foreground'
-        )}>
-          Ready to Start Selling?
-        </h2>
-        <p className={cn('mb-8 max-w-xl mx-auto',
-          themeId === 'safari' && 'text-primary-foreground/80',
-          themeId === 'ocean' && 'text-white/80',
-          themeId === 'kilimanjaro' && 'text-primary-foreground/70',
-          themeId === 'serengeti' && 'text-primary-foreground/80'
-        )}>
-          Join thousands of sellers making money on Soko Tanzania. Post your first ad for free today!
-        </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link href="/sell">
-            <Button size="lg" variant="secondary" className={cn('gap-2',
-              themeId === 'ocean' && 'rounded-full',
-              themeId === 'kilimanjaro' && 'rounded-none uppercase font-bold',
-              themeId === 'serengeti' && 'rounded-full'
-            )}>
-              Post Free Ad
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-          </Link>
-          <Link href="/auth/register?role=seller">
-            <Button
-              size="lg"
-              variant="outline"
-              className={cn(
-                themeId === 'safari' && 'border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10',
-                themeId === 'ocean' && 'border-white/30 text-white hover:bg-white/10 rounded-full',
-                themeId === 'kilimanjaro' && 'border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary rounded-none uppercase font-bold',
-                themeId === 'serengeti' && 'border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 rounded-full'
-              )}
-            >
-              Become a Seller
-            </Button>
-          </Link>
+    <section className="py-16 md:py-24 bg-muted/30">
+      <div className="container mx-auto px-4">
+        <SectionHeader
+          badge="Reviews"
+          title="Loved by Thousands"
+          subtitle="See what our community has to say"
+          icon={<Heart className="w-5 h-5" />}
+        />
+        <div className="grid md:grid-cols-3 gap-6">
+          {testimonials.map((testimonial, idx) => (
+            <Card key={idx} className="border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
+              <CardContent className="p-6">
+                <div className="flex gap-1 mb-4">
+                  {Array.from({ length: testimonial.rating }).map((_, i) => (
+                    <Star key={i} className="w-5 h-5 fill-primary text-primary" />
+                  ))}
+                </div>
+                <p className="text-lg mb-6 text-muted-foreground leading-relaxed">
+                  &quot;{testimonial.text}&quot;
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="text-lg font-bold text-primary">
+                      {testimonial.name.charAt(0)}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-semibold">{testimonial.name}</p>
+                    <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// Final CTA Section
+function FinalCTASection() {
+  return (
+    <section className="py-20 md:py-32 relative overflow-hidden">
+      {/* Background elements */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10" />
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
+
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="max-w-4xl mx-auto text-center">
+          <Badge variant="secondary" className="mb-6 px-4 py-1">
+            <Sparkles className="w-4 h-4 mr-2" />
+            Get Started Today
+          </Badge>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-balance">
+            Ready to Join{' '}
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Tanzania&apos;s
+            </span>
+            <br />
+            Largest Marketplace?
+          </h2>
+          <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto text-pretty">
+            Whether you want to buy, sell, or both - Soko is here to help you succeed.
+            Join today and start your journey!
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Link href="/auth/register">
+              <Button size="lg" className="gap-2 rounded-full px-10 h-14 text-lg">
+                Create Free Account <ArrowRight className="w-5 h-5" />
+              </Button>
+            </Link>
+            <Link href="/sell">
+              <Button size="lg" variant="outline" className="gap-2 rounded-full px-10 h-14 text-lg">
+                <Store className="w-5 h-5" />
+                Start Selling
+              </Button>
+            </Link>
+          </div>
+          <p className="mt-8 text-sm text-muted-foreground">
+            No credit card required. Free to join.
+          </p>
         </div>
       </div>
     </section>

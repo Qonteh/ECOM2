@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   MessageCircle,
   X,
@@ -12,6 +12,11 @@ import {
   Smile,
   MoreVertical,
   Search,
+  Paperclip,
+  Camera,
+  File,
+  CheckCheck,
+  Check,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,9 +29,77 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { useChatStore, useAuthStore, Conversation } from '@/lib/store';
 import { formatTZS, formatRelativeTime } from '@/lib/data';
 import { cn } from '@/lib/utils';
+
+// Emoji data - common emojis grouped by category
+const EMOJI_CATEGORIES = {
+  'Smileys': ['😀', '😃', '😄', '😁', '😅', '😂', '🤣', '😊', '😇', '🙂', '😉', '😍', '🥰', '😘', '😋', '😛', '🤔', '🤗', '🤩', '😎'],
+  'Gestures': ['👍', '👎', '👌', '✌️', '🤝', '👏', '🙌', '🤲', '👐', '🤟', '🤙', '👋', '🖐️', '✋', '🖖', '💪', '🙏', '☝️', '👆', '👇'],
+  'Hearts': ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💖', '💝', '💘', '💗', '💓', '💞', '💕', '💔', '❣️', '💟', '♥️'],
+  'Objects': ['💰', '💵', '💴', '💶', '💷', '💳', '📱', '💻', '⌚', '📷', '🎁', '🛒', '📦', '🏷️', '🔖', '📍', '✅', '❌', '⭐', '🔥'],
+  'Transport': ['🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑', '🚒', '🚐', '🛻', '🚚', '🚛', '🚜', '🏍️', '🛵', '🚲', '✈️', '🚀', '🛸'],
+};
+
+// Image preview component
+function ImagePreview({ src, onRemove }: { src: string; onRemove: () => void }) {
+  return (
+    <div className="relative inline-block mr-2 mb-2">
+      <img src={src} alt="Preview" className="h-20 w-20 object-cover rounded-lg border border-border" />
+      <button
+        onClick={onRemove}
+        className="absolute -top-2 -right-2 h-5 w-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center text-xs"
+      >
+        <X className="h-3 w-3" />
+      </button>
+    </div>
+  );
+}
+
+// Emoji Picker Component
+function EmojiPicker({ onSelect }: { onSelect: (emoji: string) => void }) {
+  const [activeCategory, setActiveCategory] = useState<string>('Smileys');
+
+  return (
+    <div className="w-72">
+      {/* Category tabs */}
+      <div className="flex border-b border-border overflow-x-auto pb-1 mb-2 gap-1">
+        {Object.keys(EMOJI_CATEGORIES).map((category) => (
+          <button
+            key={category}
+            onClick={() => setActiveCategory(category)}
+            className={cn(
+              'px-2 py-1 text-xs rounded-md whitespace-nowrap transition-colors',
+              activeCategory === category
+                ? 'bg-primary text-primary-foreground'
+                : 'hover:bg-muted'
+            )}
+          >
+            {category}
+          </button>
+        ))}
+      </div>
+      {/* Emoji grid */}
+      <div className="grid grid-cols-8 gap-1 max-h-48 overflow-y-auto">
+        {EMOJI_CATEGORIES[activeCategory as keyof typeof EMOJI_CATEGORIES].map((emoji, idx) => (
+          <button
+            key={idx}
+            onClick={() => onSelect(emoji)}
+            className="h-8 w-8 flex items-center justify-center text-lg hover:bg-muted rounded transition-colors"
+          >
+            {emoji}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function ChatWidget() {
   const { user } = useAuthStore();
@@ -42,7 +115,12 @@ export function ChatWidget() {
 
   const [message, setMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [attachedImages, setAttachedImages] = useState<string[]>([]);
+  const [isEmojiOpen, setIsEmojiOpen] = useState(false);
+  const [isAttachmentOpen, setIsAttachmentOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const activeConversation = conversations.find(
     (c) => c.id === activeConversationId
@@ -54,26 +132,99 @@ export function ChatWidget() {
     conv.buyerName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
-  }, [activeConversation?.messages]);
+  }, [activeConversation?.messages, scrollToBottom]);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    Array.from(files).forEach((file) => {
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          if (event.target?.result) {
+            setAttachedImages((prev) => [...prev, event.target!.result as string]);
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+    setIsAttachmentOpen(false);
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setAttachedImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleEmojiSelect = (emoji: string) => {
+    setMessage((prev) => prev + emoji);
+    setIsEmojiOpen(false);
+  };
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim() || !activeConversationId || !user) return;
+    if ((!message.trim() && attachedImages.length === 0) || !activeConversationId || !user) return;
+
+    // Build message content with images
+    let content = message.trim();
+    if (attachedImages.length > 0) {
+      content = attachedImages.map((img) => `[IMAGE:${img}]`).join('') + (content ? `\n${content}` : '');
+    }
 
     addMessage(activeConversationId, {
       senderId: user.id,
-      content: message.trim(),
+      content: content,
     });
     setMessage('');
+    setAttachedImages([]);
   };
 
   const totalUnread = getTotalUnread();
+
+  // Parse message content to render images
+  const renderMessageContent = (content: string) => {
+    const imageRegex = /\[IMAGE:(data:image\/[^;]+;base64,[^\]]+)\]/g;
+    const parts: (string | { type: 'image'; src: string })[] = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = imageRegex.exec(content)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(content.slice(lastIndex, match.index));
+      }
+      parts.push({ type: 'image', src: match[1] });
+      lastIndex = match.index + match[0].length;
+    }
+
+    if (lastIndex < content.length) {
+      parts.push(content.slice(lastIndex));
+    }
+
+    return (
+      <div>
+        {parts.map((part, idx) => {
+          if (typeof part === 'string') {
+            return <span key={idx}>{part}</span>;
+          }
+          return (
+            <img
+              key={idx}
+              src={part.src}
+              alt="Shared image"
+              className="max-w-full rounded-lg mt-2 cursor-pointer hover:opacity-90 transition-opacity"
+              onClick={() => window.open(part.src, '_blank')}
+            />
+          );
+        })}
+      </div>
+    );
+  };
 
   if (!isOpen) {
     return (
@@ -126,7 +277,10 @@ export function ChatWidget() {
                       <BadgeCheck className="h-4 w-4 text-primary" />
                     )}
                   </div>
-                  <span className="text-xs text-muted-foreground">Online</span>
+                  <span className="text-xs text-green-500 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                    Online
+                  </span>
                 </div>
               </div>
             </div>
@@ -223,15 +377,24 @@ export function ChatWidget() {
                             : 'bg-muted rounded-bl-sm'
                         )}
                       >
-                        <p className="text-sm">{msg.content}</p>
-                        <p
+                        <div className="text-sm">{renderMessageContent(msg.content)}</div>
+                        <div
                           className={cn(
-                            'text-[10px] mt-1',
+                            'flex items-center justify-end gap-1 mt-1',
                             isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'
                           )}
                         >
-                          {formatRelativeTime(msg.createdAt)}
-                        </p>
+                          <span className="text-[10px]">
+                            {formatRelativeTime(msg.createdAt)}
+                          </span>
+                          {isOwn && (
+                            msg.isRead ? (
+                              <CheckCheck className="h-3 w-3 text-blue-400" />
+                            ) : (
+                              <Check className="h-3 w-3" />
+                            )
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
@@ -241,15 +404,85 @@ export function ChatWidget() {
             )}
           </ScrollArea>
 
+          {/* Image preview area */}
+          {attachedImages.length > 0 && (
+            <div className="px-3 pt-2 flex flex-wrap">
+              {attachedImages.map((img, idx) => (
+                <ImagePreview key={idx} src={img} onRemove={() => handleRemoveImage(idx)} />
+              ))}
+            </div>
+          )}
+
           {/* Message input */}
           <form onSubmit={handleSendMessage} className="p-3 border-t border-border">
             <div className="flex items-center gap-2">
-              <Button type="button" variant="ghost" size="icon" className="h-9 w-9 shrink-0">
-                <ImageIcon className="h-5 w-5" />
-              </Button>
-              <Button type="button" variant="ghost" size="icon" className="h-9 w-9 shrink-0">
-                <Smile className="h-5 w-5" />
-              </Button>
+              {/* Attachment button */}
+              <Popover open={isAttachmentOpen} onOpenChange={setIsAttachmentOpen}>
+                <PopoverTrigger asChild>
+                  <Button type="button" variant="ghost" size="icon" className="h-9 w-9 shrink-0">
+                    <Paperclip className="h-5 w-5" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-48 p-2" side="top" align="start">
+                  <div className="space-y-1">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors text-sm"
+                    >
+                      <ImageIcon className="h-4 w-4 text-blue-500" />
+                      Photo Gallery
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => cameraInputRef.current?.click()}
+                      className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors text-sm"
+                    >
+                      <Camera className="h-4 w-4 text-green-500" />
+                      Take Photo
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors text-sm"
+                    >
+                      <File className="h-4 w-4 text-orange-500" />
+                      Document
+                    </button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+
+              {/* Hidden file inputs */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={handleFileSelect}
+              />
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={handleFileSelect}
+              />
+
+              {/* Emoji button */}
+              <Popover open={isEmojiOpen} onOpenChange={setIsEmojiOpen}>
+                <PopoverTrigger asChild>
+                  <Button type="button" variant="ghost" size="icon" className="h-9 w-9 shrink-0">
+                    <Smile className="h-5 w-5" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-3" side="top" align="start">
+                  <EmojiPicker onSelect={handleEmojiSelect} />
+                </PopoverContent>
+              </Popover>
+
               <Input
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
@@ -260,7 +493,7 @@ export function ChatWidget() {
                 type="submit"
                 size="icon"
                 className="h-10 w-10 shrink-0"
-                disabled={!message.trim()}
+                disabled={!message.trim() && attachedImages.length === 0}
               >
                 <Send className="h-5 w-5" />
               </Button>
@@ -357,7 +590,9 @@ function ConversationItem({
         </p>
         <div className="flex items-center justify-between gap-2">
           <p className="text-sm text-muted-foreground truncate">
-            {conversation.lastMessage || 'No messages yet'}
+            {conversation.lastMessage?.includes('[IMAGE:') 
+              ? '📷 Photo' 
+              : conversation.lastMessage || 'No messages yet'}
           </p>
           {conversation.unreadCount > 0 && (
             <span className="h-5 min-w-5 px-1.5 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center shrink-0">
